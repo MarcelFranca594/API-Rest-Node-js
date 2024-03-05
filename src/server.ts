@@ -1,5 +1,6 @@
 import fastity from 'fastify'
 import { knex } from './database'
+import { env } from 'process'
 // Criar a base da aplicação
 const app = fastity()
 // 5 Principais métodos GET, POST, PUT,  PUTCH, DELETE
@@ -22,7 +23,7 @@ app.get('/hello', async () => {
 })
 app
   .listen({
-    port: 3333,
+    port: env.PORT, // Usa a porta definida na variável de ambiente PORT
   })
   .then(() => {
     console.log('HTTP Server Running!')
