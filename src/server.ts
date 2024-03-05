@@ -1,5 +1,5 @@
 import fastity from 'fastify'
-import { env } from 'process'
+import { env } from './env'
 import { transactionsRoutes } from './routes/transactions'
 // Criar a base da aplicação
 const app = fastity()
