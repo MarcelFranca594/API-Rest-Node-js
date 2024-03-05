@@ -6,7 +6,9 @@ const app = fastity()
 // 5 Principais métodos GET, POST, PUT,  PUTCH, DELETE
 // http://localhost:3333/helo
 
-app.register(transactionsRoutes)
+app.register(transactionsRoutes, {
+  prefix: 'transactions',
+})
 
 app
   .listen({
