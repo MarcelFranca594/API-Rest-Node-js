@@ -5,9 +5,20 @@ const app = fastity()
 // 5 Principais métodos GET, POST, PUT,  PUTCH, DELETE
 // http://localhost:3333/helo
 app.get('/hello', async () => {
-  const tables = await knex('sqlite_schema').select('*')
+  // Realizando queries com Knex
+  const transactions = await knex('transactions')
+    .where('amount', 1000)
+    .select('*')
 
-  return tables
+  /*
+    .insert({
+      id: crypto.randomUUID(),
+      title: 'Transação de teste',
+      amount: 1000,
+    })
+    .returning('*')
+  */
+  return transactions
 })
 app
   .listen({
