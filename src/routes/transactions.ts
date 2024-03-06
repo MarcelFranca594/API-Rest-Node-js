@@ -33,6 +33,17 @@ export async function transactionsRoutes(app: FastifyInstance) {
     return { transaction }
   })
 
+  // Criando uma rota para resumir as transações
+  app.get('/summary', async () => {
+    // Buscando o resumo das transações do banco de dados usando o knex, que calcula a soma dos valores da coluna 'amount'
+    // e armazena como 'amount' e retorna apenas o primeiro resultado
+    const summary = await knex('transactions')
+      .sum('amount', { as: 'amount' })
+      .first()
+
+    return { summary }
+  })
+
   // Criando uma rota POST em '/' na instância do Fastify
   app.post('/', async (request, reply) => {
     // { title, amount, type: credit ou debit}
@@ -50,11 +61,27 @@ export async function transactionsRoutes(app: FastifyInstance) {
       request.body,
     )
 
+    // Obtendo o valor do cookie 'sessionId' da requisição HTTP
+    let sessionId = request.cookies.sessionId
+
+    // Verificando se o cookie 'sessionId' não existe
+    if (!sessionId) {
+      // Gerando um novo ID de sessão aleatório usando a função randomUUID()
+      sessionId = randomUUID()
+
+      // Definindo um novo cookie 'sessionId' na resposta HTTP com o valor gerado anteriormente
+      reply.cookie('sessionId', sessionId, {
+        path: '/',
+        maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days => Definindo o tempo máximo de vida do cookie em milissegundos (7 dias)
+      })
+    }
+
     // Criando uma nova transação
     await knex('transactions').insert({
       id: randomUUID(),
       title,
       amount: type === 'credit' ? amount : amount * -1,
+      session_id: sessionId,
     })
 
     return reply.status(201).send()
