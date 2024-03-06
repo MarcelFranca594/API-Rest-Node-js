@@ -2,47 +2,79 @@ import { FastifyInstance } from 'fastify'
 import { z } from 'zod'
 import { randomUUID } from 'node:crypto'
 import { knex } from '../database'
+import { checkSessionIdExists } from '../middlewares/check-session-id-exists'
 
 export async function transactionsRoutes(app: FastifyInstance) {
   // Criando uma rota de listagem
-  app.get('/', async () => {
-    // Buscando todas as transações do banco de dados usando o knex e armazenando na variável transactions
-    const transactions = await knex('transactions').select()
+  app.get(
+    '/',
+    {
+      preHandler: [checkSessionIdExists],
+    },
+    async (request, reply) => {
+      const { sessionId } = request.cookies
+      // Buscando todas as transações do banco de dados usando o knex e armazenando na variável transactions
+      const transactions = await knex('transactions')
+        .where('session_id', sessionId)
+        .select()
 
-    // Retornando um objeto contendo as transações
-    return {
-      transactions,
-    }
-  })
+      // Retornando um objeto contendo as transações
+      return {
+        transactions,
+      }
+    },
+  )
 
   // Criando uma rota que mostra detalhes de uma transação com base em seu ID
   // Exemplo de chamada: http://localhost:3333/transactions/skjdbks-154d5s-sds-12254
-  app.get('/:id', async (request) => {
-    // Definindo um esquema para validar os parâmetros da requisição, garantindo que o ID seja uma string UUID válida
-    const getTransactionParamsSchema = z.object({
-      id: z.string().uuid(),
-    })
+  app.get(
+    '/:id',
+    {
+      preHandler: [checkSessionIdExists],
+    },
+    async (request) => {
+      // Definindo um esquema para validar os parâmetros da requisição, garantindo que o ID seja uma string UUID válida
+      const getTransactionParamsSchema = z.object({
+        id: z.string().uuid(),
+      })
 
-    // Validando os parâmetros da requisição com base no esquema definido e extraindo o ID da requisição
-    const { id } = getTransactionParamsSchema.parse(request.params)
+      // Validando os parâmetros da requisição com base no esquema definido e extraindo o ID da requisição
+      const { id } = getTransactionParamsSchema.parse(request.params)
 
-    // Buscando a transação no banco de dados com base no ID fornecido e armazenando na variável transaction
-    const transaction = await knex('transactions').where('id', id).first()
+      const { sessionId } = request.cookies
 
-    // Retornando um objeto contendo os detalhes da transação encontrada
-    return { transaction }
-  })
+      // Buscando a transação no banco de dados com base no ID fornecido e armazenando na variável transaction
+      const transaction = await knex('transactions')
+        .where({
+          session_id: sessionId,
+          id,
+        })
+        .first()
+
+      // Retornando um objeto contendo os detalhes da transação encontrada
+      return { transaction }
+    },
+  )
 
   // Criando uma rota para resumir as transações
-  app.get('/summary', async () => {
-    // Buscando o resumo das transações do banco de dados usando o knex, que calcula a soma dos valores da coluna 'amount'
-    // e armazena como 'amount' e retorna apenas o primeiro resultado
-    const summary = await knex('transactions')
-      .sum('amount', { as: 'amount' })
-      .first()
+  app.get(
+    '/summary',
+    {
+      preHandler: [checkSessionIdExists],
+    },
+    async (request) => {
+      const { sessionId } = request.cookies
 
-    return { summary }
-  })
+      // Buscando o resumo das transações do banco de dados usando o knex, que calcula a soma dos valores da coluna 'amount'
+      // e armazena como 'amount' e retorna apenas o primeiro resultado
+      const summary = await knex('transactions')
+        .where('session_id', sessionId)
+        .sum('amount', { as: 'amount' })
+        .first()
+
+      return { summary }
+    },
+  )
 
   // Criando uma rota POST em '/' na instância do Fastify
   app.post('/', async (request, reply) => {
