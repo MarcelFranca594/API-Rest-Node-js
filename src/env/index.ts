@@ -13,14 +13,14 @@ const envSchema = z.object({
   PORT: z.number().default(3333),
 })
 
-const _env = envSchema.safeParse(process.env)
+const _env = envSchema.safeParse(process.env) as any
 
 // Verifica se o parse foi bem-sucedido
 if (_env === false) {
   // Se não, exibe uma mensagem de erro no console com detalhes do erro
   console.error('Invalid environment variables!', _env.error.format())
   // E lança um erro indicando que as variáveis de ambiente são inválidas
-  throw new error('Invalid environment variables.')
+  throw new Error('Invalid environment variables.')
 }
 
 // Se o parse foi bem-sucedido, exporta os dados das variáveis de ambiente
