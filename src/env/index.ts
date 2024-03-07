@@ -1,6 +1,13 @@
-import { error } from 'console'
-import 'dotenv/config'
+import { config } from 'dotenv'
 import { z } from 'zod'
+
+if (process.env.NODE_ENV === 'test') {
+  config({ path: '.env.test' })
+} else {
+  config()
+}
+
+console.log(process.env.NODE_ENV)
 
 // Schema = Formato de dados => Formato de dados que irá receber das Variaveis Ambiente
 // Define um esquema para as variáveis de ambiente usando a biblioteca zod
@@ -13,10 +20,10 @@ const envSchema = z.object({
   PORT: z.number().default(3333),
 })
 
-const _env = envSchema.safeParse(process.env) as any
+const _env = envSchema.safeParse(process.env)
 
 // Verifica se o parse foi bem-sucedido
-if (_env === false) {
+if (_env.success === false) {
   // Se não, exibe uma mensagem de erro no console com detalhes do erro
   console.error('Invalid environment variables!', _env.error.format())
   // E lança um erro indicando que as variáveis de ambiente são inválidas
