@@ -14,10 +14,11 @@ console.log(process.env.NODE_ENV)
 const envSchema = z.object({
   // Define a variável NODE_ENV que só pode ter os valores 'development', 'test' ou 'production', com 'production' como valor padrão
   NODE_ENV: z.enum(['development', 'test', 'production']).default('production'),
+  DATABASE_CLIENT: z.enum(['sqlite', 'pg']),
   // Define a variável DATABASE_URL como uma string obrigatória
   DATABASE_URL: z.string(),
   // Define a variável PORT como um número, com o valor padrão 3333
-  PORT: z.number().default(3333),
+  PORT: z.coerce.number().default(3333),
 })
 
 const _env = envSchema.safeParse(process.env)
