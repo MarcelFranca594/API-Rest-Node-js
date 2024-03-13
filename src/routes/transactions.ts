@@ -109,7 +109,7 @@ export async function transactionsRoutes(app: FastifyInstance) {
       // Definindo um novo cookie 'sessionId' na resposta HTTP com o valor gerado anteriormente
       reply.cookie('sessionId', sessionId, {
         path: '/',
-        maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days => Definindo o tempo máximo de vida do cookie em milissegundos (7 dias)
+        maxAge: 60 * 60 * 24 * 7, // 7 days => Definindo o tempo máximo de vida do cookie em milissegundos (7 dias)
       })
     }
 
